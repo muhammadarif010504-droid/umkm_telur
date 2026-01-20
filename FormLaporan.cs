@@ -4,65 +4,123 @@ using Microsoft.Data.Sqlite;
 using System.Drawing;
 using System.Windows.Forms;
 
-public class FormLaporan : Form
+namespace umkm_telur
 {
-    private DataGridView dgvTransaksi;
-    private Label lblTotal;
-
-    public FormLaporan()
+    public class FormLaporan : Form
     {
-        Text = "Form Laporan";
-        Width = 600;
-        Height = 400;
-        StartPosition = FormStartPosition.CenterScreen;
+        private DataGridView dgvTransaksi;
+        private Label lblTotal;
+        private Button btnDelete;
 
-        dgvTransaksi = new DataGridView()
+        public FormLaporan()
         {
-            Left = 20,
-            Top = 20,
-            Width = 540,
-            Height = 280,
-            ReadOnly = true,
-            AllowUserToAddRows = false
-        };
+            Text = "Form Laporan";
+            Width = 600;
+            Height = 400;
+            StartPosition = FormStartPosition.CenterScreen;
 
-        lblTotal = new Label()
-        {
-            Left = 20,
-            Top = 320,
-            Width = 400,
-            Font = new Font("Segoe UI", 10, FontStyle.Bold)
-        };
+            dgvTransaksi = new DataGridView()
+            {
+                Left = 20,
+                Top = 20,
+                Width = 540,
+                Height = 280,
+                ReadOnly = true,
+                AllowUserToAddRows = false
+            };
 
-        Controls.Add(dgvTransaksi);
-        Controls.Add(lblTotal);
+            lblTotal = new Label()
+            {
+                Left = 20,
+                Top = 320,
+                Width = 400,
+                Font = new Font("Segoe UI", 10, FontStyle.Bold)
+            };
 
-        LoadData();
-    }
+            btnDelete = new Button()
+            {
+                Text = "Hapus Data",
+                Left = 460,
+                Top = 320,
+                Width = 100,
+                Height = 30
+            };
+            btnDelete.Click += BtnDelete_Click;
 
-    private void LoadData()
-    {
-        try
-        {
-            string dbPath = System.IO.Path.Combine(Application.StartupPath, "umkm_telur.db");
-            using var conn = new SqliteConnection($"Data Source={dbPath}");
-            conn.Open();
+            Controls.Add(dgvTransaksi);
+            Controls.Add(lblTotal);
+            Controls.Add(btnDelete);
 
-            string query = "SELECT nama_pembeli, jumlah AS 'Jumlah (kilo)', tanggal FROM transaksi ORDER BY tanggal DESC";
-            using var cmd = new SqliteCommand(query, conn);
-            using var reader = cmd.ExecuteReader();
-
-            DataTable table = new DataTable();
-            table.Load(reader);
-            dgvTransaksi.DataSource = table;
-
-            using var cmdTotal = new SqliteCommand("SELECT SUM(jumlah) FROM transaksi", conn);
-            object? result = cmdTotal.ExecuteScalar();
-            lblTotal.Text = "Total Penjualan: " + (result?.ToString() ?? "0") + " kilo";
+            LoadData();
         }
-        catch (Exception ex)
+
+        private void LoadData()
         {
-            MessageBox.Show("Error load laporan: " + ex.Message);
+            try
+            {
+                string dbPath = Application.StartupPath + "\\umkm_telur.db";
+                using var conn = new SqliteConnection($"Data Source={dbPath}");
+                conn.Open();
+
+                string query = "SELECT nama_pembeli, jumlah AS 'Jumlah (kilo)', tanggal FROM transaksi ORDER BY tanggal DESC";
+                using var cmd = new SqliteCommand(query, conn);
+                using var reader = cmd.ExecuteReader();
+
+                DataTable table = new DataTable();
+                table.Load(reader);
+                dgvTransaksi.DataSource = table;
+
+                using var cmdTotal = new SqliteCommand("SELECT SUM(jumlah) FROM transaksi", conn);
+                object? result = cmdTotal.ExecuteScalar();
+                lblTotal.Text = "Total Penjualan: " + (result?.ToString() ?? "0") + " kilo";
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error load laporan: " + ex.Message);
+            }
+        }
+
+        private void BtnDelete_Click(object? sender, EventArgs e)
+        {
+            if (dgvTransaksi.CurrentRow != null)
+            {
+                var result = MessageBox.Show("Apakah kamu yakin ingin menghapus data ini?",
+                                             "Konfirmasi Hapus",
+                                             MessageBoxButtons.YesNo,
+                                             MessageBoxIcon.Warning);
+
+                if (result == DialogResult.Yes)
+                {
+                    try
+                    {
+                        // Ambil nilai nama_pembeli dengan aman
+                        object? cellValue = dgvTransaksi.CurrentRow.Cells["nama_pembeli"].Value;
+                        string namaPembeli = cellValue?.ToString() ?? "";
+
+                        if (string.IsNullOrWhiteSpace(namaPembeli))
+                        {
+                            MessageBox.Show("Data tidak valid untuk dihapus.");
+                            return;
+                        }
+
+                        string dbPath = Application.StartupPath + "\\umkm_telur.db";
+                        using var conn = new SqliteConnection($"Data Source={dbPath}");
+                        conn.Open();
+
+                        string query = "DELETE FROM transaksi WHERE nama_pembeli = @nama";
+                        using var cmd = new SqliteCommand(query, conn);
+                        cmd.Parameters.AddWithValue("@nama", namaPembeli);
+                        cmd.ExecuteNonQuery();
+
+                        MessageBox.Show("Data berhasil dihapus!", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        LoadData();
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show("Error hapus data: " + ex.Message);
+                    }
+                }
+            }
         }
     }
 }

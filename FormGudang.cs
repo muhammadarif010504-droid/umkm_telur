@@ -5,55 +5,64 @@ using System.Windows.Forms;
 
 public class FormGudang : Form
 {
+    private Label lblJudul;
     private TextBox txtJumlahMasuk;
-    private DateTimePicker dtTanggal;
     private Button btnSimpan;
-    private Label lblStatus;
 
     public FormGudang()
     {
-        Text = "Form Gudang - Input Stok Masuk";
+        Text = "Form Gudang";
         Width = 400;
-        Height = 300;
+        Height = 250;
         StartPosition = FormStartPosition.CenterScreen;
 
-        Label lblJumlah = new Label() { Text = "Jumlah Masuk (kilo)", Left = 20, Top = 20, Width = 120 };
-        txtJumlahMasuk = new TextBox() { Left = 160, Top = 20, Width = 180 };
+        lblJudul = new Label()
+        {
+            Text = "Input Stok Gudang (kilo)",
+            Left = 20,
+            Top = 20,
+            Width = 300,
+            Font = new Font("Segoe UI", 12, FontStyle.Bold)
+        };
 
-        Label lblTanggal = new Label() { Text = "Tanggal", Left = 20, Top = 60, Width = 120 };
-        dtTanggal = new DateTimePicker() { Left = 160, Top = 60, Width = 180 };
+        txtJumlahMasuk = new TextBox() { Left = 20, Top = 60, Width = 200 };
 
-        btnSimpan = new Button() { Text = "Simpan", Left = 160, Top = 100, Width = 100 };
+        btnSimpan = new Button()
+        {
+            Text = "Simpan",
+            Left = 240,
+            Top = 60,
+            Width = 100
+        };
         btnSimpan.Click += BtnSimpan_Click;
 
-        lblStatus = new Label() { Left = 20, Top = 150, Width = 300, ForeColor = Color.Green };
-
-        Controls.AddRange(new Control[] { lblJumlah, txtJumlahMasuk, lblTanggal, dtTanggal, btnSimpan, lblStatus });
+        Controls.Add(lblJudul);
+        Controls.Add(txtJumlahMasuk);
+        Controls.Add(btnSimpan);
     }
 
+    // Fungsi simpan stok gudang ke database
     private void BtnSimpan_Click(object? sender, EventArgs e)
     {
         try
         {
-            int masuk = int.Parse(txtJumlahMasuk.Text.Trim());
-            string tanggal = dtTanggal.Value.ToString("yyyy-MM-dd");
-
             string dbPath = System.IO.Path.Combine(Application.StartupPath, "umkm_telur.db");
             using var conn = new SqliteConnection($"Data Source={dbPath}");
             conn.Open();
 
             string query = "INSERT INTO stok (tanggal, jumlah_masuk, jumlah_keluar, sisa) VALUES (@t, @jm, 0, @s)";
             using var cmd = new SqliteCommand(query, conn);
-            cmd.Parameters.AddWithValue("@t", tanggal);
-            cmd.Parameters.AddWithValue("@jm", masuk);
-            cmd.Parameters.AddWithValue("@s", masuk); // awalnya sisa = jumlah masuk
-
+            cmd.Parameters.AddWithValue("@t", DateTime.Now.ToString("yyyy-MM-dd"));
+            cmd.Parameters.AddWithValue("@jm", int.Parse(txtJumlahMasuk.Text.Trim()));
+            cmd.Parameters.AddWithValue("@s", int.Parse(txtJumlahMasuk.Text.Trim()));
             cmd.ExecuteNonQuery();
-            lblStatus.Text = "Stok berhasil disimpan.";
+
+            MessageBox.Show("Stok gudang berhasil ditambahkan!", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            txtJumlahMasuk.Clear();
         }
         catch (Exception ex)
         {
-            lblStatus.Text = "Error: " + ex.Message;
+            MessageBox.Show("Error simpan gudang: " + ex.Message);
         }
     }
 }

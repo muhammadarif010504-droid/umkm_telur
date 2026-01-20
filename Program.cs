@@ -1,13 +1,19 @@
 using System;
 using System.Windows.Forms;
+using umkm_telur; // pastikan namespace sama dengan file FormLogin.cs
 
-static class Program
+namespace umkm_telur
 {
-    [STAThread]
-    static void Main()
+    internal static class Program
     {
-        Application.EnableVisualStyles();
-        Application.SetCompatibleTextRenderingDefault(false);
-        Application.Run(new FormLogin());
+        [STAThread]
+        static void Main()
+        {
+            Application.EnableVisualStyles();
+            Application.SetCompatibleTextRenderingDefault(false);
+
+            // Jalankan FormLogin sebagai form utama
+            Application.Run(new FormLogin());
+        }
     }
 }
