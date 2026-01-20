@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("umkm_telur")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+63113ef24b8dfe8d884a68cc2eac05f315983d1a")]
 [assembly: System.Reflection.AssemblyProductAttribute("umkm_telur")]
 [assembly: System.Reflection.AssemblyTitleAttribute("umkm_telur")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

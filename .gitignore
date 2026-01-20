@@ -1,0 +1,15 @@
+# Folder build
+bin/
+obj/
+
+# File database
+*.db
+
+# File konfigurasi pengguna
+*.user
+*.suo
+*.log
+
+# File cache dan temporary
+*.cache
+*.tmp
